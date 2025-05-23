@@ -1,1 +1,2 @@
-for(a=process.argv.slice(2),n=a[0]?.length,l=n;l;--l)for(i=0;i<=n-l;i++)a.every(x=>x.includes(t=a[0].slice(i,i+l)))&&(l=console.log(t))
+[,,...a]=process.argv
+for(l=n=a[0]?.length;l;l--)for(i=0;i<=n-l;i++)a.every(x=>x.match(t=a[0].substr(i,l)))&&(l=console.log(t))

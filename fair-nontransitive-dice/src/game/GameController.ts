@@ -8,7 +8,10 @@ import { HelpHandler } from './HelpHandler'
 import prompts from 'prompts'
 
 export class GameController {
-    constructor(private args: string[]) {}
+    private readonly diceAll: Dice[]
+    constructor(private args: string[]) {
+        this.diceAll = this.safeParse()
+    }
 
     async start() {
         const dice = this.safeParse()
@@ -56,30 +59,26 @@ export class GameController {
     }
 
     private async askInput(size: number): Promise<number> {
-        const choices = this.buildChoices(size)
-        const { input }: { input: number | 'help' | 'exit' } = await prompts({
+        while (true) {
+            const v = await this.promptChoice(size)
+            if (v === 'exit') process.exit(0)
+            if (v === 'help') { new HelpHandler().print(this.diceAll); continue }
+            return v
+        }
+    }
+
+    private async promptChoice(size: number) {
+        const { n }: { n: number | 'help' | 'exit' } = await prompts({
             type: 'select',
-            name: 'input',
+            name: 'n',
             message: `Add your number modulo ${size}.`,
-            choices
+            choices: [
+                ...Array.from({ length: size }, (_, i) => ({ title: `${i}`, value: i })),
+                { title: '? - help', value: 'help' },
+                { title: 'X - exit', value: 'exit' }
+            ]
         })
-        return this.handleInput(input, size)
-    }
-
-    private buildChoices(size: number) {
-        const digits = Array.from({ length: size }, (_, i) => ({ title: `${i}`, value: i }))
-        return [...digits, { title: '? - help', value: 'help' }, { title: 'X - exit', value: 'exit' }]
-    }
-
-    private async handleInput(input: any, size: number): Promise<number> {
-        if (input === 'exit') process.exit(0)
-        if (input === 'help') return this.showHelp(size)
-        return input
-    }
-
-    private async showHelp(size: number): Promise<number> {
-        new HelpHandler().print(this.safeParse())
-        return this.askInput(size)
+        return n
     }
 
     private reveal(commit: any, input: number, dice: Dice, isComputer: boolean): number {

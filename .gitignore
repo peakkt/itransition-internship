@@ -5,3 +5,7 @@ sha3_inputs/
 
 node_modules/
 dist/
+**/.env
+**/.env.*
+
+**/generated/prisma/**

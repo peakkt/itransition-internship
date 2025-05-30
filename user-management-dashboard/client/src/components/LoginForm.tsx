@@ -11,8 +11,8 @@ export function LoginForm({ onLogin }: { onLogin: () => void }) {
         try {
             await new AuthApi().login(email, password)
             onLogin()
-        } catch {
-            setError('Invalid credentials or blocked user')
+        } catch (err: any) {
+            setError(err.message || 'Login failed')
         }
     }
 

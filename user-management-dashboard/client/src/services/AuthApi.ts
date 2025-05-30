@@ -7,7 +7,10 @@ export class AuthApi {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password }),
         })
-        if (!res.ok) throw new Error('Login failed')
+        if (!res.ok) {
+            const { message } = await res.json().catch(() => ({ message: 'Login failed' }))
+            throw new Error(message)
+        }
         const { token } = await res.json()
         localStorage.setItem('token', token)
         return token

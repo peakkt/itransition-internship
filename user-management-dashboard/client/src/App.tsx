@@ -4,6 +4,7 @@ import { Toolbar } from './components/Toolbar'
 import { LoginForm } from './components/LoginForm'
 import { RegisterForm } from './components/RegisterForm'
 import { AuthApi } from './services/AuthApi'
+import { fetchWithAuth } from './services/fetchWithAuth'
 import type { User } from './types/User'
 
 function App() {
@@ -13,11 +14,7 @@ function App() {
     const [showRegister, setShowRegister] = useState<boolean>(false)
 
     const loadUsers = () => {
-        fetch('/users', {
-            headers: {
-                Authorization: `Bearer ${AuthApi.getToken()}`,
-            },
-        })
+        fetchWithAuth('/users')
             .then(res => (res.ok ? res.json() : Promise.reject()))
             .then(setUsers)
             .catch(() => {
@@ -52,7 +49,19 @@ function App() {
 
     return (
         <div className="container py-4">
-            <h2 className="mb-4">User Management</h2>
+            <h2 className="mb-4 d-flex justify-content-between align-items-center">
+                <span>User Management</span>
+                <button
+                    className="btn btn-outline-danger btn-sm"
+                    onClick={() => {
+                        AuthApi.clearToken()
+                        setLoggedIn(false)
+                    }}
+                >
+                    Logout
+                </button>
+            </h2>
+
             <Toolbar
                 selected={selected}
                 onActionComplete={() => {

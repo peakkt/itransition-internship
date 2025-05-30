@@ -1,3 +1,2 @@
-import { Router } from 'express'
-const router = Router()
-export default router
+import { PrismaClient } from '@prisma/client'
+export const prisma = new PrismaClient()

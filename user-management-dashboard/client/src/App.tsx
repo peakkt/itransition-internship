@@ -17,12 +17,19 @@ function App() {
     const [filter, setFilter] = useState<string>('')
 
     const loadUsers = async () => {
-        const res = await fetchWithAuth('/users')
-        if (!res.ok) {
-            return
+        try {
+            const res = await fetchWithAuth('/users')
+            if (!res.ok) {
+                return
+            }
+            const contentType = res.headers.get('Content-Type') || ''
+            if (!contentType.includes('application/json')) {
+                return
+            }
+            const data: User[] = await res.json()
+            setUsers(data)
+        } catch {
         }
-        const data = await res.json()
-        setUsers(data)
     }
 
     useEffect(() => {
@@ -57,13 +64,13 @@ function App() {
     }
 
     const visibleUsers = users
-        .filter((u) => {
+        .filter(u => {
             const text = (u.name + ' ' + u.email).toLowerCase()
             return text.includes(filter.toLowerCase())
         })
         .sort((a, b) => {
-            let va: string = ''
-            let vb: string = ''
+            let va = ''
+            let vb = ''
             if (sortField === 'name') {
                 va = a.name.toLowerCase()
                 vb = b.name.toLowerCase()

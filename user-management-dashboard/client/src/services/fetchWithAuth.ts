@@ -1,31 +1,20 @@
 import { AuthApi } from './AuthApi'
 
-let isLoggingOut = false
-
-export async function fetchWithAuth(input: RequestInfo, init?: RequestInit) {
+export async function fetchWithAuth(input: RequestInfo, init: RequestInit = {}) {
     const token = AuthApi.getToken()
     const headers: Record<string, string> = {}
-
     if (token) {
         headers['Authorization'] = `Bearer ${token}`
     }
-
+    if (init.body) {
+        headers['Content-Type'] = 'application/json'
+    }
     const response = await fetch(input, {
-        ...(init || {}),
+        ...init,
         headers: {
-            ...(init?.headers || {}),
+            ...(init.headers || {}),
             ...headers,
         },
     })
-
-    if (response.status === 401) {
-        if (!isLoggingOut) {
-            isLoggingOut = true
-            AuthApi.clearToken()
-            window.location.href = '/login'
-        }
-        return response
-    }
-
     return response
 }

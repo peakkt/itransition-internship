@@ -15,8 +15,6 @@ export function Toolbar({
     setFilter: (v: string) => void
     onLogout: () => void
 }) {
-    const disabled = selected.length === 0
-
     const call = (action: 'block' | 'unblock' | 'delete') => {
         if (action === 'block') api.blockUsers(selected).then(onActionComplete)
         if (action === 'unblock') api.unblockUsers(selected).then(onActionComplete)
@@ -78,12 +76,11 @@ export function Toolbar({
 
                 <button
                     onClick={() => call('block')}
-                    disabled={disabled}
                     style={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: '6px',
-                        backgroundColor: disabled ? '#aac8ff' : '#007bff',
+                        backgroundColor: '#007bff',
                         color: '#ffffff',
                         border: 'none',
                         borderRadius: '6px',
@@ -91,7 +88,7 @@ export function Toolbar({
                         padding: '0 14px',
                         fontSize: '14px',
                         fontWeight: 500,
-                        cursor: disabled ? 'not-allowed' : 'pointer',
+                        cursor: 'pointer',
                         transition: 'background-color 0.2s',
                     }}
                 >
@@ -100,20 +97,19 @@ export function Toolbar({
 
                 <button
                     onClick={() => call('unblock')}
-                    disabled={disabled}
                     style={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: '6px',
                         backgroundColor: '#ffffff',
-                        color: disabled ? '#aac8ff' : '#007bff',
-                        border: disabled ? '1px solid #aac8ff' : '1px solid #007bff',
+                        color: '#007bff',
+                        border: '1px solid #007bff',
                         borderRadius: '6px',
                         height: '40px',
                         padding: '0 12px',
                         fontSize: '14px',
                         fontWeight: 500,
-                        cursor: disabled ? 'not-allowed' : 'pointer',
+                        cursor: 'pointer',
                         transition: 'all 0.2s',
                     }}
                 >
@@ -122,20 +118,19 @@ export function Toolbar({
 
                 <button
                     onClick={() => call('delete')}
-                    disabled={disabled}
                     style={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: '6px',
                         backgroundColor: '#ffffff',
-                        color: disabled ? '#f8b3b5' : '#dc3545',
-                        border: disabled ? '1px solid #f8b3b5' : '1px solid #dc3545',
+                        color: '#dc3545',
+                        border: '1px solid #dc3545',
                         borderRadius: '6px',
                         height: '40px',
                         padding: '0 12px',
                         fontSize: '14px',
                         fontWeight: 500,
-                        cursor: disabled ? 'not-allowed' : 'pointer',
+                        cursor: 'pointer',
                         transition: 'all 0.2s',
                     }}
                 >

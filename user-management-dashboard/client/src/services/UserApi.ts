@@ -1,11 +1,21 @@
 import { fetchWithAuth } from './fetchWithAuth'
+import { AuthApi } from './AuthApi'
 
 export class UserApi {
     private base = '/users'
 
+    private async handleAuthFailure(res: Response) {
+        if (res.status === 401) {
+            AuthApi.clearToken()
+            window.location.href = '/login'
+            return true
+        }
+        return false
+    }
+
     async getUsers() {
         const res = await fetchWithAuth(this.base)
-        return res.json()
+        return res
     }
 
     async blockUsers(ids: number[]) {
@@ -13,6 +23,12 @@ export class UserApi {
             method: 'POST',
             body: JSON.stringify({ ids }),
         })
+        if (await this.handleAuthFailure(res)) {
+            return null
+        }
+        if (!res.ok) {
+            throw new Error()
+        }
         return res.json()
     }
 
@@ -21,6 +37,12 @@ export class UserApi {
             method: 'POST',
             body: JSON.stringify({ ids }),
         })
+        if (await this.handleAuthFailure(res)) {
+            return null
+        }
+        if (!res.ok) {
+            throw new Error()
+        }
         return res.json()
     }
 
@@ -29,6 +51,12 @@ export class UserApi {
             method: 'DELETE',
             body: JSON.stringify({ ids }),
         })
+        if (await this.handleAuthFailure(res)) {
+            return null
+        }
+        if (!res.ok) {
+            throw new Error()
+        }
         return res.json()
     }
 }

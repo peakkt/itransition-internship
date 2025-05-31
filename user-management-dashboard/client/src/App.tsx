@@ -12,54 +12,77 @@ function App() {
     const [selected, setSelected] = useState<number[]>([])
     const [loggedIn, setLoggedIn] = useState<boolean>(!!AuthApi.getToken())
     const [showRegister, setShowRegister] = useState<boolean>(false)
-    const [filter, setFilter] = useState('')
-    const [sort, setSort] = useState<'name' | 'email' | 'lastLogin'>('lastLogin')
-    const [asc, setAsc] = useState(false)
+    const [sortField, setSortField] = useState<'name' | 'email' | 'lastLogin'>('name')
+    const [asc, setAsc] = useState<boolean>(true)
+    const [filter, setFilter] = useState<string>('')
 
-    const loadUsers = () => {
-        fetchWithAuth('/users')
-            .then(res => (res.ok ? res.json() : Promise.reject()))
-            .then((data: User[]) => setUsers(data))
-            .catch(() => {
-                AuthApi.clearToken()
-                setLoggedIn(false)
-            })
+    const loadUsers = async () => {
+        const res = await fetchWithAuth('/users')
+        if (!res.ok) {
+            return
+        }
+        const data = await res.json()
+        setUsers(data)
     }
 
     useEffect(() => {
-        if (loggedIn) loadUsers()
+        if (loggedIn) {
+            loadUsers()
+        }
     }, [loggedIn])
 
     if (!loggedIn) {
         return showRegister ? (
             <div className="min-vh-100 d-flex align-items-center justify-content-center bg-light">
-                <RegisterForm onSuccess={() => setShowRegister(false)} onBack={() => setShowRegister(false)} />
+                <RegisterForm
+                    onSuccess={() => setShowRegister(false)}
+                    onBack={() => setShowRegister(false)}
+                />
             </div>
         ) : (
-            <LoginForm onLogin={() => setLoggedIn(true)} onShowRegister={() => setShowRegister(true)} />
+            <LoginForm
+                onLogin={() => setLoggedIn(true)}
+                onShowRegister={() => setShowRegister(true)}
+            />
         )
     }
 
-    const toggleSort = (field: typeof sort) => {
-        setSort(field)
-        setAsc(prev => (field === sort ? !prev : true))
+    const handleSort = (field: 'name' | 'email' | 'lastLogin') => {
+        if (sortField === field) {
+            setAsc(!asc)
+        } else {
+            setSortField(field)
+            setAsc(true)
+        }
     }
 
-    const filtered = users
-        .filter(u =>
-            u.name.toLowerCase().includes(filter.toLowerCase()) ||
-            u.email.toLowerCase().includes(filter.toLowerCase())
-        )
+    const visibleUsers = users
+        .filter((u) => {
+            const text = (u.name + ' ' + u.email).toLowerCase()
+            return text.includes(filter.toLowerCase())
+        })
         .sort((a, b) => {
-            const v1 = a[sort] ?? ''
-            const v2 = b[sort] ?? ''
-            return asc
-                ? String(v1).localeCompare(String(v2))
-                : String(v2).localeCompare(String(v1))
+            let va: string = ''
+            let vb: string = ''
+            if (sortField === 'name') {
+                va = a.name.toLowerCase()
+                vb = b.name.toLowerCase()
+            }
+            if (sortField === 'email') {
+                va = a.email.toLowerCase()
+                vb = b.email.toLowerCase()
+            }
+            if (sortField === 'lastLogin') {
+                va = a.lastLogin || ''
+                vb = b.lastLogin || ''
+            }
+            if (va < vb) return asc ? -1 : 1
+            if (va > vb) return asc ? 1 : -1
+            return 0
         })
 
     return (
-        <div style={{ padding: '40px 56px', fontFamily: 'system-ui, sans-serif' }}>
+        <div className="container py-4">
             <Toolbar
                 selected={selected}
                 onActionComplete={() => {
@@ -73,13 +96,14 @@ function App() {
                     setLoggedIn(false)
                 }}
             />
+
             <UsersTable
-                users={filtered}
+                users={visibleUsers}
                 selected={selected}
                 setSelected={setSelected}
-                sort={sort}
+                sort={sortField}
                 asc={asc}
-                onSort={toggleSort}
+                onSort={handleSort}
             />
         </div>
     )

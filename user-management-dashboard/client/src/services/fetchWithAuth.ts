@@ -1,14 +1,31 @@
+import { AuthApi } from './AuthApi'
+
+let isLoggingOut = false
+
 export async function fetchWithAuth(input: RequestInfo, init?: RequestInit) {
-    const token = localStorage.getItem('token')
-    const res = await fetch(input, {
-        ...init,
+    const token = AuthApi.getToken()
+    const headers: Record<string, string> = {}
+
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+    }
+
+    const response = await fetch(input, {
+        ...(init || {}),
         headers: {
-            ...init?.headers,
-            Authorization: `Bearer ${token}`,
+            ...(init?.headers || {}),
+            ...headers,
         },
     })
-    if (res.status === 401) {
-        localStorage.removeItem('token')
+
+    if (response.status === 401) {
+        if (!isLoggingOut) {
+            isLoggingOut = true
+            AuthApi.clearToken()
+            window.location.href = '/login'
+        }
+        return response
     }
-    return res
+
+    return response
 }

@@ -28,22 +28,15 @@ function App() {
     }, [loggedIn])
 
     if (!loggedIn) {
-        return (
-            <div className="container py-5 d-flex flex-column align-items-center">
-                {showRegister ? (
-                    <RegisterForm
-                        onSuccess={() => setShowRegister(false)}
-                        onBack={() => setShowRegister(false)}
-                    />
-                ) : (
-                    <>
-                        <LoginForm onLogin={() => setLoggedIn(true)} />
-                        <button className="btn btn-link mt-3" onClick={() => setShowRegister(true)}>
-                            Don't have an account? Register
-                        </button>
-                    </>
-                )}
+        return showRegister ? (
+            <div className="min-vh-100 d-flex align-items-center justify-content-center bg-light">
+                <RegisterForm
+                    onSuccess={() => setShowRegister(false)}
+                    onBack={() => setShowRegister(false)}
+                />
             </div>
+        ) : (
+            <LoginForm onLogin={() => setLoggedIn(true)} onShowRegister={() => setShowRegister(true)} />
         )
     }
 
@@ -61,7 +54,6 @@ function App() {
                     Logout
                 </button>
             </h2>
-
             <Toolbar
                 selected={selected}
                 onActionComplete={() => {

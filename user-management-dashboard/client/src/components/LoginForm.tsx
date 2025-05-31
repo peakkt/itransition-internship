@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { AuthApi } from '../services/AuthApi'
 import { Eye, EyeOff } from 'lucide-react'
+import { ForgotPassword } from './ForgotPassword'
 
 export function LoginForm({
                               onLogin,
@@ -14,14 +15,21 @@ export function LoginForm({
     const [showPassword, setShowPassword] = useState(false)
     const [rememberMe, setRememberMe] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [showForgot, setShowForgot] = useState(false)
+
+    if (showForgot) return <ForgotPassword onBack={() => setShowForgot(false)} />
 
     const submit = async (e: React.FormEvent) => {
         e.preventDefault()
         try {
             await new AuthApi().login(email, password)
             onLogin()
-        } catch (err: any) {
-            setError(err.message || 'Login failed')
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                setError(err.message)
+            } else {
+                setError('Login failed')
+            }
         }
     }
 
@@ -45,13 +53,7 @@ export function LoginForm({
                 </div>
 
                 <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                    <div
-                        style={{
-                            width: '100%',
-                            maxWidth: 400,
-                            padding: '0 56px',
-                        }}
-                    >
+                    <div style={{ width: '100%', maxWidth: 400, padding: '0 56px' }}>
                         <div style={{ marginBottom: '24px' }}>
                             <div style={{ fontSize: '14px', color: '#6c757d', marginBottom: '4px' }}>
                                 Manage users with confidence
@@ -208,7 +210,7 @@ export function LoginForm({
                         </button>
                     </div>
                     <button
-                        onClick={() => alert('Password reset functionality coming soon')}
+                        onClick={() => setShowForgot(true)}
                         style={{
                             background: 'none',
                             border: 'none',

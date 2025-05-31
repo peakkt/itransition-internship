@@ -12,11 +12,14 @@ function App() {
     const [selected, setSelected] = useState<number[]>([])
     const [loggedIn, setLoggedIn] = useState<boolean>(!!AuthApi.getToken())
     const [showRegister, setShowRegister] = useState<boolean>(false)
+    const [filter, setFilter] = useState('')
+    const [sort, setSort] = useState<'name' | 'email' | 'lastLogin'>('lastLogin')
+    const [asc, setAsc] = useState(false)
 
     const loadUsers = () => {
         fetchWithAuth('/users')
             .then(res => (res.ok ? res.json() : Promise.reject()))
-            .then(setUsers)
+            .then((data: User[]) => setUsers(data))
             .catch(() => {
                 AuthApi.clearToken()
                 setLoggedIn(false)
@@ -30,38 +33,54 @@ function App() {
     if (!loggedIn) {
         return showRegister ? (
             <div className="min-vh-100 d-flex align-items-center justify-content-center bg-light">
-                <RegisterForm
-                    onSuccess={() => setShowRegister(false)}
-                    onBack={() => setShowRegister(false)}
-                />
+                <RegisterForm onSuccess={() => setShowRegister(false)} onBack={() => setShowRegister(false)} />
             </div>
         ) : (
             <LoginForm onLogin={() => setLoggedIn(true)} onShowRegister={() => setShowRegister(true)} />
         )
     }
 
+    const toggleSort = (field: typeof sort) => {
+        setSort(field)
+        setAsc(prev => (field === sort ? !prev : true))
+    }
+
+    const filtered = users
+        .filter(u =>
+            u.name.toLowerCase().includes(filter.toLowerCase()) ||
+            u.email.toLowerCase().includes(filter.toLowerCase())
+        )
+        .sort((a, b) => {
+            const v1 = a[sort] ?? ''
+            const v2 = b[sort] ?? ''
+            return asc
+                ? String(v1).localeCompare(String(v2))
+                : String(v2).localeCompare(String(v1))
+        })
+
     return (
-        <div className="container py-4">
-            <h2 className="mb-4 d-flex justify-content-between align-items-center">
-                <span>User Management</span>
-                <button
-                    className="btn btn-outline-danger btn-sm"
-                    onClick={() => {
-                        AuthApi.clearToken()
-                        setLoggedIn(false)
-                    }}
-                >
-                    Logout
-                </button>
-            </h2>
+        <div style={{ padding: '40px 56px', fontFamily: 'system-ui, sans-serif' }}>
             <Toolbar
                 selected={selected}
                 onActionComplete={() => {
                     loadUsers()
                     setSelected([])
                 }}
+                filter={filter}
+                setFilter={setFilter}
+                onLogout={() => {
+                    AuthApi.clearToken()
+                    setLoggedIn(false)
+                }}
             />
-            <UsersTable users={users} selected={selected} setSelected={setSelected} />
+            <UsersTable
+                users={filtered}
+                selected={selected}
+                setSelected={setSelected}
+                sort={sort}
+                asc={asc}
+                onSort={toggleSort}
+            />
         </div>
     )
 }
